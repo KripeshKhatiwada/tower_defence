@@ -2,57 +2,79 @@ import pygame
 import sys
 
 # Grid and window setup
-ROWS, COLS = 16, 16               # Number of rows and columns in the grid
-CELL_SIZE = 40                   # Size of each cell in pixels
-SIDES = COLS * CELL_SIZE         # Window width and height (square)
-WHITE = (255, 255, 255)          # Color for grid lines (white)
-BLACK = (0, 0, 0)                # Background color (black)
-ENEMY_COLOR = (222, 10, 10)      # Color of the enemy (red)
+ROWS, COLS = 16, 16               # Grid size
+CELL_SIZE = 40                   # Each cell's pixel size
+SIDES = COLS * CELL_SIZE         # Window size (square)
 
-# Enemy path: moves along row 5, from column 0 to 9
-ENEMY_PATH = [(5, i) for i in range(COLS)]  
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+ENEMY_COLOR = (222, 10, 10)
+TOWER_COLOR = (0, 200, 255)
+
+# Game state
+tower_positions = []
+TOWER_RANGE = 2  # Manhattan distance
+ENEMY_PATH = [(5, i) for i in range(COLS)]  # Enemy path: row 5 left to right
+
 
 def draw_grid(screen):
-    """
-    Draws the grid lines on the screen.
-    Loops over all rows and columns, drawing a square outline at each cell.
-    """
+    """Draws the grid lines."""
     for row in range(ROWS):
         for col in range(COLS):
-            # Draw rectangle border with thickness 1 (just the outline)
             pygame.draw.rect(screen, WHITE, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE), 1)
+
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((SIDES, SIDES))  # Create window
-    pygame.display.set_caption("Tower Defense - vr1")
-    
-    enemy_pos_index = 0      # Tracks enemy's current position along the path
+    screen = pygame.display.set_mode((SIDES, SIDES))
+    pygame.display.set_caption("Tower Defense - v1")
+
+    enemy_pos_index = 0
     clock = pygame.time.Clock()
     running = True
 
     while running:
-        screen.fill(BLACK)    # Clear screen each frame with black background
-        draw_grid(screen)     # Draw the grid lines
+        screen.fill(BLACK)
+        draw_grid(screen)
 
-        # Handle events (like window close)
+        # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                col = mouse_x // CELL_SIZE
+                row = mouse_y // CELL_SIZE
+                if (row, col) not in tower_positions and (row, col) not in ENEMY_PATH:
+                    tower_positions.append((row, col))
+                    print(f"Tower placed at ({row}, {col})")
 
-        # Draw the enemy square at its current position on the path
+        # Draw towers
+        for t_row, t_col in tower_positions:
+            pygame.draw.rect(screen, TOWER_COLOR, (t_col * CELL_SIZE, t_row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+        # Move and draw enemy
         if enemy_pos_index < len(ENEMY_PATH):
-            row, col = ENEMY_PATH[enemy_pos_index]
-            pygame.draw.rect(screen, ENEMY_COLOR, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            enemy_pos_index += 1  # Move enemy to next position on next frame
-        else:
-            enemy_pos_index = 0   # Reset to start of path when done
+            enemy_row, enemy_col = ENEMY_PATH[enemy_pos_index]
+            pygame.draw.rect(screen, ENEMY_COLOR, (enemy_col * CELL_SIZE, enemy_row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            enemy_pos_index += 1
 
-        pygame.display.flip()   # Update the display
-        clock.tick(2)           # Limit frame rate to 2 FPS (enemy moves every 0.5 seconds)
+            # Check for tower detection
+            for t_row, t_col in tower_positions:
+                dist = abs(t_row - enemy_row) + abs(t_col - enemy_col)
+                if dist <= TOWER_RANGE:
+                    print(f"Tower at ({t_row},{t_col}) sees enemy at ({enemy_row},{enemy_col})!")
+
+        else:
+            enemy_pos_index = 0
+
+        pygame.display.flip()
+        clock.tick(4)
 
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__":
     main()
