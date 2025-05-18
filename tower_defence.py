@@ -1,10 +1,12 @@
 import pygame
 import sys
-from Enemy_path import generate_enemy_path
+import random
+from Enemy_path import PREDEFINED_PATHS
 from Enemy_Bullets_Class import Enemy, Bullet
 from constants import *
 
-ENEMY_PATH = generate_enemy_path(ROWS, COLS)
+ENEMY_PATH = random.choice(PREDEFINED_PATHS)
+
 
 # Draw grid lines
 def draw_grid(screen):

@@ -1,51 +1,31 @@
-import random
-from constants import *
-def generate_enemy_path(ROWS, COLS):
-    sides = ['top', 'bottom', 'left', 'right']
-    start_side = random.choice(sides)
-    end_side = random.choice([s for s in sides if s != start_side])
+PREDEFINED_PATHS = [
 
-    def random_point_on(side):
-        if side == 'top':
-            return (0, random.randint(0, COLS - 1))
-        elif side == 'bottom':
-            return (ROWS - 1, random.randint(0, COLS - 1))
-        elif side == 'left':
-            return (random.randint(0, ROWS - 1), 0)
-        elif side == 'right':
-            return (random.randint(0, ROWS - 1), COLS - 1)
+    # Path 1: start top going down, bend right, then down to bottom
+    [
+        (0,2),(1,2),(2,2),(3,2),(4,2),
+        (4,3),(4,4),(4,5),(4,6),(4,7),(4,8),(4,9),(4,10),
+        (5,10),(6,10),(7,10),(8,10),(9,10),(10,10),(11,10),(12,10),(13,10),(14,10),(15,10)
+    ],
 
-    start = random_point_on(start_side)
-    end = random_point_on(end_side)
+    # Path 2: start left going right, bend down, then right to right edge
+    [
+        (5,0),(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),
+        (6,6),(7,6),(8,6),(9,6),(10,6),(11,6),(12,6),
+        (12,7),(12,8),(12,9),(12,10),(12,11),(12,12),(12,13),(12,14),(12,15)
+    ],
 
-    bend_count = random.choice([1, 2])
-    bends = []
-    for _ in range(bend_count):
-        bend = (random.randint(1, ROWS - 2), random.randint(1, COLS - 2))
-        bends.append(bend)
+    # Path 3: start right going left, bend down, then left to left edge
+    [
+        (3,15),(3,14),(3,13),(3,12),(3,11),(3,10),(3,9),(3,8),(3,7),(3,6),(3,5),(3,4),
+        (4,4),(5,4),(6,4),(7,4),(8,4),(9,4),(10,4),
+        (10,3),(10,2),(10,1),(10,0)
+    ],
 
-    points = [start] + bends + [end]
+    # Path 4: start bottom going up, bend left, then up to top edge
+    [
+        (15,8),(14,8),(13,8),(12,8),(11,8),(10,8),(9,8),(8,8),
+        (8,7),(8,6),(8,5),(8,4),(8,3),(8,2),
+        (7,2),(6,2),(5,2),(4,2),(3,2),(2,2),(1,2),(0,2)
+    ],
 
-    path = []
-    for i in range(len(points) - 1):
-        curr = points[i]
-        next_p = points[i + 1]
-        temp_path = []
-
-        row1, col1 = curr
-        row2, col2 = next_p
-
-        if col1 != col2:
-            step = 1 if col2 > col1 else -1
-            for c in range(col1, col2 + step, step):
-                temp_path.append((row1, c))
-        if row1 != row2:
-            step = 1 if row2 > row1 else -1
-            for r in range(row1 + step, row2 + step, step):
-                temp_path.append((r, col2))
-
-        path += temp_path
-
-    return path
-
-
+]
