@@ -22,6 +22,7 @@ def draw_grid(screen):
 def draw_text(screen, text,x,y,font,color=WHITE):
     text_surface= font.render(text,True,color)
     screen.blit(text_surface, (x, y))
+   
 # Main game loop
 def main():
     pygame.init()
@@ -29,6 +30,7 @@ def main():
     pygame.display.set_caption("Tower Defense - v3")
     score=0
     lives=5
+    game_over = False
     font = pygame.font.SysFont("Impact", 36)
     clock = pygame.time.Clock()
     running = True
@@ -153,9 +155,24 @@ def main():
         pygame.display.flip()
         clock.tick(60)  # 60 FPS
         if lives <= 0:
-            print("Game Over!")
+            game_over = True
             running = False
+            break
+    if game_over:
+            # Game Over Screen
+            game_over_font = pygame.font.SysFont("Impact", 72)
+            screen.fill(BLACK)
+            draw_text(screen, f"Final Score: {score}", 190, 100, font, WHITE)
+            draw_text(screen, "GAME OVER", 111, 270, game_over_font, RED)
+        
+            pygame.display.flip()
 
+            # Wait for user to close the window
+            waiting = True
+            while waiting:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        waiting = False    
 
     pygame.quit()
     sys.exit()
