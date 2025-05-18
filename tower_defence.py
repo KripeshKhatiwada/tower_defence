@@ -4,8 +4,7 @@ import random
 from Enemy_path import PREDEFINED_PATHS
 from Enemy_Bullets_Class import Enemy, Bullet
 from constants import *
-
-ENEMY_PATH = random.choice(PREDEFINED_PATHS)
+from background import load_landscape_tiles, draw_background
 
 
 # Draw grid lines
@@ -14,7 +13,7 @@ def draw_grid(screen):
         for col in range(COLS):
             pygame.draw.rect(
                 screen,
-                WHITE,
+                LIGHT_WHITE,
                 (col * CELL_SIZE, row * CELL_SIZE + UI_HEIGHT, CELL_SIZE, CELL_SIZE),
                 1
             )
@@ -27,7 +26,9 @@ def draw_text(screen, text,x,y,font,color=WHITE):
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SIDES, SIDES + UI_HEIGHT))
-    pygame.display.set_caption("Tower Defense - v3")
+    pygame.display.set_caption("Tower Defense - v")
+    landscape_tiles = load_landscape_tiles("assets/tiles", 39)
+    ENEMY_PATH = random.choice(PREDEFINED_PATHS)
     score=0
     lives=5
     game_over = False
@@ -52,6 +53,8 @@ def main():
 
     while running:
         screen.fill(BLACK)
+        draw_background(screen, landscape_tiles)
+
         pygame.draw.rect(screen, LIGHT_BLACK, (0, 0, SIDES, UI_HEIGHT))
         for row, col in ENEMY_PATH:
                 pygame.draw.rect(
@@ -176,7 +179,7 @@ def main():
 
     pygame.quit()
     sys.exit()
-
+ 
 
 # Start the game
 if __name__ == "__main__":
