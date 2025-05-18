@@ -4,12 +4,13 @@ import sys
 # Grid and window setup
 ROWS = 16
 COLS = 16
-CELL_SIZE = 40
+CELL_SIZE = 35
 SIDES = COLS * CELL_SIZE
-
+UI_HEIGHT = 80
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+LIGHT_BLACK=(50,50,50)
 ENEMY_COLOR = (222, 10, 10)
 TOWER_COLOR = (0, 200, 255)
 BULLET_COLOR = (255, 255, 0)
@@ -42,7 +43,7 @@ class Enemy:
 class Bullet:
     def __init__(self, tower_pos, target_enemy):
         self.x = tower_pos[1] * CELL_SIZE + CELL_SIZE // 2
-        self.y = tower_pos[0] * CELL_SIZE + CELL_SIZE // 2
+        self.y = tower_pos[0] * CELL_SIZE + CELL_SIZE // 2 + UI_HEIGHT
         self.target = target_enemy
         self.speed = 8
 
@@ -51,7 +52,7 @@ class Bullet:
             return True  # Bullet disappears if target is dead
 
         target_x = self.target.col * CELL_SIZE + CELL_SIZE // 2
-        target_y = self.target.row * CELL_SIZE + CELL_SIZE // 2
+        target_y = self.target.row * CELL_SIZE + CELL_SIZE // 2 + UI_HEIGHT
 
         dx = target_x - self.x
         dy = target_y - self.y
@@ -76,17 +77,21 @@ def draw_grid(screen):
             pygame.draw.rect(
                 screen,
                 WHITE,
-                (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+                (col * CELL_SIZE, row * CELL_SIZE + UI_HEIGHT, CELL_SIZE, CELL_SIZE),
                 1
             )
 
-
+def draw_text(screen, text,x,y,font,color=WHITE):
+    text_surface= font.render(text,True,color)
+    screen.blit(text_surface, (x, y))
 # Main game loop
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((SIDES, SIDES))
+    screen = pygame.display.set_mode((SIDES, SIDES + UI_HEIGHT))
     pygame.display.set_caption("Tower Defense - v3")
-
+    score=0
+    lives=5
+    font = pygame.font.SysFont("Impact", 36)
     clock = pygame.time.Clock()
     running = True
 
@@ -107,6 +112,8 @@ def main():
 
     while running:
         screen.fill(BLACK)
+        pygame.draw.rect(screen, LIGHT_BLACK, (0, 0, SIDES, UI_HEIGHT))
+
         draw_grid(screen)
 
         # Handle events like closing window or clicking
@@ -116,6 +123,10 @@ def main():
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
+                mouse_y -= UI_HEIGHT 
+                
+                if mouse_y < 0:
+                     continue  # Click was on the UI, ignore
                 col = mouse_x // CELL_SIZE
                 row = mouse_y // CELL_SIZE
 
@@ -128,7 +139,7 @@ def main():
             pygame.draw.rect(
                 screen,
                 TOWER_COLOR,
-                (t_col * CELL_SIZE, t_row * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                (t_col * CELL_SIZE, t_row * CELL_SIZE+ UI_HEIGHT, CELL_SIZE, CELL_SIZE)
             )
 
         # Spawn new enemy every few seconds
@@ -152,12 +163,18 @@ def main():
                     pygame.draw.rect(
                         screen,
                         ENEMY_COLOR,
-                        (enemy.col * CELL_SIZE, enemy.row * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                        (enemy.col * CELL_SIZE, enemy.row * CELL_SIZE+ UI_HEIGHT, CELL_SIZE, CELL_SIZE)
                     )
                 else:
-                    enemies.remove(enemy)  # Reached end
+                    if enemy.row is None:
+                        lives -= 1
+                        print("Enemy reached the end! Lives left:", lives)
+                        enemies.remove(enemy)
+  # Reached end
             else:
-                enemies.remove(enemy)  # Killed
+                score += 1
+                print("Enemy destroyed! Score:", score)
+                enemies.remove(enemy) # Killed
 
         # Towers shoot bullets at enemies in range
         for tower in tower_positions:
@@ -188,9 +205,14 @@ def main():
                     (int(bullet.x), int(bullet.y)),
                     5
                 )
-
+        draw_text(screen, f"Score: {score}", 10, 10,font)
+        draw_text(screen, f"Lives: {lives}", 450, 10, font)
         pygame.display.flip()
         clock.tick(60)  # 60 FPS
+        if lives <= 0:
+            print("Game Over!")
+            running = False
+
 
     pygame.quit()
     sys.exit()
