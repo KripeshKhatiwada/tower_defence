@@ -21,13 +21,16 @@ def draw_grid(screen):
 def draw_text(screen, text,x,y,font,color=WHITE):
     text_surface= font.render(text,True,color)
     screen.blit(text_surface, (x, y))
-   
+
 # Main game loop
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SIDES, SIDES + UI_HEIGHT))
     pygame.display.set_caption("Tower Defense - v")
+
     landscape_tiles = load_landscape_tiles("assets/tiles", 39)
+    tile_map = [[random.randint(0, len(landscape_tiles) - 1) for _ in range(COLS)] for _ in range(ROWS)]
+    
     ENEMY_PATH = random.choice(PREDEFINED_PATHS)
     score=0
     lives=5
@@ -53,9 +56,10 @@ def main():
 
     while running:
         screen.fill(BLACK)
-        draw_background(screen, landscape_tiles)
 
+        draw_background(screen, landscape_tiles, tile_map)
         pygame.draw.rect(screen, LIGHT_BLACK, (0, 0, SIDES, UI_HEIGHT))
+        
         for row, col in ENEMY_PATH:
                 pygame.draw.rect(
                 screen,
