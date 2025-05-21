@@ -4,7 +4,7 @@ import random
 from Enemy_path import PREDEFINED_PATHS
 from Enemy_Bullets_Class import Enemy, Bullet
 from constants import *
-from background import load_landscape_tiles, draw_background
+from background import draw_background
 
 
 # Draw grid lines
@@ -25,13 +25,12 @@ def draw_text(screen, text,x,y,font,color=WHITE):
 # Main game loop
 def main():
     pygame.init()
+    
     screen = pygame.display.set_mode((SIDES, SIDES + UI_HEIGHT))
     pygame.display.set_caption("Tower Defense - v")
 
-    landscape_tiles = load_landscape_tiles("assets/tiles", 39)
-    tile_map = [[random.randint(0, len(landscape_tiles) - 1) for _ in range(COLS)] for _ in range(ROWS)]
-    
     ENEMY_PATH = random.choice(PREDEFINED_PATHS)
+    
     score=0
     lives=5
     game_over = False
@@ -53,19 +52,13 @@ def main():
 
     tower_cooldowns = {}  # (row, col): cooldown value
     tower_fire_interval = 30  # frames between shots
+    
 
     while running:
         screen.fill(BLACK)
-
-        draw_background(screen, landscape_tiles, tile_map)
         pygame.draw.rect(screen, LIGHT_BLACK, (0, 0, SIDES, UI_HEIGHT))
-        
-        for row, col in ENEMY_PATH:
-                pygame.draw.rect(
-                screen,
-                PATH_COLOR,
-                (col * CELL_SIZE, row * CELL_SIZE + UI_HEIGHT, CELL_SIZE, CELL_SIZE)
-            )
+
+        draw_background(screen, ENEMY_PATH)
         draw_grid(screen)
 
         # Handle events like closing window or clicking
@@ -131,7 +124,7 @@ def main():
         # Towers shoot bullets at enemies in range
         for tower in tower_positions:
             # Increase cooldown
-            tower_cooldowns[tower] = tower_cooldowns.get(tower, 0) + 1
+            tower_cooldowns[tower] = min(tower_cooldowns.get(tower, 0) + 1, tower_fire_interval)
 
             # If tower is ready to fire
             if tower_cooldowns[tower] >= tower_fire_interval:
